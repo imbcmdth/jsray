@@ -10,15 +10,18 @@ Flog.RayTracer.Camera.prototype = {
     equator: null,
     up: null,
     screen: null,
-
-    initialize : function(pos, lookAt, up) {
+    pinhole:false,
+    initialize : function(pos, lookAt, up, pinhole) {
         this.position = pos;
         this.lookAt = lookAt;
         this.up = up;
         this.equator = lookAt.normalize().cross(this.up);
         this.screen = Flog.RayTracer.Vector.prototype.add(this.position, this.lookAt);
+        if(pinhole) {
+            this.pinhole = true;
+        }
     },
-    
+
     getRay: function(vx, vy){
         var pos = Flog.RayTracer.Vector.prototype.subtract(
             this.screen,
@@ -32,13 +35,18 @@ Flog.RayTracer.Camera.prototype = {
             pos,
             this.position
         );
-    
-        var ray = new Flog.RayTracer.Ray(pos, dir.normalize());
-        
+
+        var ray;
+        if(this.pinhole){
+            ray = new Flog.RayTracer.Ray(this.position, dir.normalize());
+        } else {
+            ray = new Flog.RayTracer.Ray(pos, dir.normalize());
+        }
+
         return ray;
     },
-    
+
     toString : function () {
-        return 'Ray []';    
+        return 'Ray []';
     }
 }
