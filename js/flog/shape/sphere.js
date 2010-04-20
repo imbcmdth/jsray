@@ -43,7 +43,9 @@ Flog.RayTracer.Shape.Sphere.prototype = {
         }
         return info;
     },
-        
+    bb: function(){
+        return [{a:this.position.x-this.radius,b:this.radius*2},{a:this.position.y-this.radius,b:this.radius*2},{a:this.position.z-this.radius,b:this.radius*2}];
+    },        
     toString : function () {
         return 'Sphere [position=' + this.position + ', radius=' + this.radius + ']';   
     }
