@@ -19,7 +19,9 @@ Flog.RayTracer.Shape.Cube.prototype = {
         
         return info;
     },
-        
+    bb: function(){
+  //      return [{a:this.position.x-this.radius,b:this.radius*2},{a:this.position.y-this.radius,b:this.radius*2},{a:this.position.z-this.radius,b:this.radius*2}];
+    },
     toString : function () {
         return 'Box [position=' + this.position + ']';  
     }
