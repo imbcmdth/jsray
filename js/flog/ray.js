@@ -11,7 +11,9 @@ Flog.RayTracer.Ray.prototype = {
         this.position = pos;
         this.direction = dir;
     },
-    
+    toIntervals : function() {
+        return  [{a:this.position.x, b:this.direction.x},{a:this.position.y, b:this.direction.y},{a:this.position.z, b:this.direction.z}];
+    },
     toString : function () {
         return 'Ray [' + this.position + ',' + this.direction + ']';    
     }
