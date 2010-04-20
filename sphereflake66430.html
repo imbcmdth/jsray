@@ -66469,7 +66469,8 @@ if(!done_initializing) {
     scene.camera = new Flog.RayTracer.Camera(
                         new Flog.RayTracer.Vector(1.5, 0, 1.5),
                         new Flog.RayTracer.Vector(-2, 0, -2),
-                        new Flog.RayTracer.Vector(1, 0, -1)
+                        new Flog.RayTracer.Vector(1, 0, -1),
+                        true
                     );
 
     scene.background = new Flog.RayTracer.Background(
@@ -66656,13 +66657,6 @@ fieldset#options {
 <h2>66430-sphere &quot;Sphereflake&quot; Demo</h2>
 <p><b>Warning:</b> This is <b>very</b> CPU intensive. Your browser may appear to stop
 responding.</p>
-<p>This extreme demo includes more than 30,000 times the number of objects, twice the light count, deeper reflections,
-and a canvas with 56% more pixels! Scattered about are few other enhancements where needed.</p>
-<p><b>N-Tree</b> is a <a href="http://en.wikipedia.org/wiki/Bounding_volume_hierarchy">Bounding Volume
-Hierarchy</a>.</p>
-<!-- <p><b>I-Tree</b> is a <a href="http://en.wikipedia.org/wiki/Bounding_Interval_Hierarchy">Bounding Interval
-Hierarchy</a>.</p>  -->
-<p><b>None</b> is a the default "naive" ray tracer performing > 66k intersection tests per ray.</p>
 <div id="renderStats">
     <label>Percent Done: <span id="percentDone"></span></label><br>
     <label>Rays Per Second: <span id="raysSecond"></span></label>
