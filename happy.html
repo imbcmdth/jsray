@@ -1,0 +1,325 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Happy Buddha Raytracer @ Flog</title>
+<script type="text/javascript" src="js/lib/prototype.js"></script>
+<script type="text/javascript" src="js/lib/ntree.js"></script>
+<script type="text/javascript" src="js/flog/color.js"></script>
+<script type="text/javascript" src="js/flog/light.js"></script>
+<script type="text/javascript" src="js/flog/vector.js"></script>
+<script type="text/javascript" src="js/flog/ray.js"></script>
+<script type="text/javascript" src="js/flog/scene.js"></script>
+<script type="text/javascript" src="js/flog/material/basematerial.js"></script>
+<script type="text/javascript" src="js/flog/material/solid.js"></script>
+<script type="text/javascript" src="js/flog/material/chessboard.js"></script>
+<script type="text/javascript" src="js/flog/shape/baseshape.js"></script>
+<script type="text/javascript" src="js/flog/shape/sphere.js"></script>
+<script type="text/javascript" src="js/flog/shape/plane.js"></script>
+<script type="text/javascript" src="js/flog/shape/triangle.js"></script>
+<script type="text/javascript" src="js/flog/intersectioninfo.js"></script>
+<script type="text/javascript" src="js/flog/camera.js"></script>
+<script type="text/javascript" src="js/flog/background.js"></script>
+<script type="text/javascript" src="js/flog/engine.js"></script>
+<script type="text/javascript" src="obj/happy_points.js"></script>
+<script type="text/javascript" src="obj/happy_polys.js"></script>
+
+<script type="text/javascript">
+var done_initializing = false;
+var scene = new Flog.RayTracer.Scene();
+var lights = [];
+var new_points_array = [];
+
+function renderScene(){
+    Event.stopObserving('btnRender', 'click', renderScene);
+    $('btnRender').disabled = true;
+
+if(!done_initializing) {
+
+    scene.camera = new Flog.RayTracer.Camera(
+                        new Flog.RayTracer.Vector(0, 0, -1),
+                        new Flog.RayTracer.Vector(0, 0, 0.5),
+                        new Flog.RayTracer.Vector(0, 1, 0),
+                        true, 
+                        15
+                    );
+
+    scene.background = new Flog.RayTracer.Background(
+                                new Flog.RayTracer.Color(0.5, 0.5, 0.5),
+                                0.25
+                            );
+
+    // First take raw points and make point-lists
+    var raw_pts = Flog.RayTracer.Happy.RawPoints;
+    for(var k = 0; k < raw_pts.length; k++ ){
+    	new_point = new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(raw_pts[k][0], raw_pts[k][1]-0.125, raw_pts[k][2]*-1), new Flog.RayTracer.Vector(0, 0, 0)); // We move the bunny 0.1 units down on the y axis
+    	new_points_array[k] = new_point;//,[]];
+		}
+    // Add bunny
+    var raw_plys = Flog.RayTracer.Happy.RawPolys;
+    for(k = 0; k < raw_plys.length; k++ ){
+    	// Fetch vertex indices
+    	v1_idx = raw_plys[k][0];
+    	v2_idx = raw_plys[k][2];
+    	v3_idx = raw_plys[k][1];
+    	// Fetch vertex indices
+      new_triangle = new Flog.RayTracer.Shape.Triangle( 
+      	[ new_points_array[v1_idx],
+          new_points_array[v2_idx],
+          new_points_array[v3_idx] ],
+	        new Flog.RayTracer.Material.Solid(
+	            new Flog.RayTracer.Color(1.0,0.25,0.0),
+	            0.1,
+	            1.02,
+	            0.2,
+	            5.0,
+	            0.7
+	        )
+      );
+      if (new_points_array[v1_idx].direction.x == 0 && new_points_array[v1_idx].direction.y == 0 && new_points_array[v1_idx].direction.z == 0 ) {
+      	new_points_array[v1_idx].direction = new_triangle.n.normalize();
+      }else {
+      	new_points_array[v1_idx].direction = Flog.RayTracer.Vector.prototype.add(new_points_array[v1_idx].direction, new_triangle.n.normalize());
+      }
+      if (new_points_array[v2_idx].direction.x == 0 && new_points_array[v2_idx].direction.y == 0 && new_points_array[v2_idx].direction.z == 0 ) {
+      	new_points_array[v2_idx].direction = new_triangle.n.normalize();
+      }else {
+      	new_points_array[v2_idx].direction = Flog.RayTracer.Vector.prototype.add(new_points_array[v2_idx].direction, new_triangle.n.normalize());
+      }
+      if (new_points_array[v3_idx].direction.x == 0 && new_points_array[v3_idx].direction.y == 0 && new_points_array[v3_idx].direction.z == 0 ) {
+      	new_points_array[v3_idx].direction = new_triangle.n.normalize();
+      }else {
+      	new_points_array[v3_idx].direction = Flog.RayTracer.Vector.prototype.add(new_points_array[v3_idx].direction, new_triangle.n.normalize());
+      }
+      scene.addShape(new_triangle);
+    }
+
+    var plane = new Flog.RayTracer.Shape.Plane(
+                                new Flog.RayTracer.Vector(0, 1, 0).normalize(),
+                                0.075,
+                                new Flog.RayTracer.Material.Chessboard(
+                                    new Flog.RayTracer.Color(1,1,1), 
+                                    new Flog.RayTracer.Color(0,0,0),
+                                    0.25,
+                                    0.0,
+                                    0.0,
+                                    2,
+                                    1.0
+                                )
+                            );
+    scene.addPlane(plane);
+
+
+    lights[0] = new Flog.RayTracer.Light(
+        new Flog.RayTracer.Vector(0, 1, 0),
+        new Flog.RayTracer.Color(0.9, 0.9, 0.9),
+        100
+    );
+
+    lights[1] = new Flog.RayTracer.Light(
+        new Flog.RayTracer.Vector(0, 0.5, -1),
+        new Flog.RayTracer.Color(0.8, 0.7, 0.8),
+        100
+    );
+
+    lights[2] = new Flog.RayTracer.Light(
+        new Flog.RayTracer.Vector(6, 6, 0.5),
+        new Flog.RayTracer.Color(0.5, 0.4, 0.35),
+        60
+    );
+
+    lights[3] = new Flog.RayTracer.Light(
+        new Flog.RayTracer.Vector(-6, 15, -0.5),
+        new Flog.RayTracer.Color(0.5, 0.5, 0.5),
+        40
+    );
+
+    lights[4] = new Flog.RayTracer.Light(
+        new Flog.RayTracer.Vector(-6, 15, 0.5),
+        new Flog.RayTracer.Color(0.7, 0.35, 0.35),
+        70
+    );
+
+    done_initializing = true;
+}
+    scene.lights = [];
+
+    /* Load rendering options */
+    var imageWidth = $F('imageWidth');
+    var imageHeight = $F('imageHeight');
+    var pixelSize = $F('pixelSize').split(',');
+    var renderDiffuse = $F('renderDiffuse');
+    var renderShadows = $F('renderShadows');
+    var renderHighlights = $F('renderHighlights');
+    var renderReflections = $F('renderReflections');
+    var renderTransparency = $F('renderTransparency');
+    var renderTree = $('NTree').checked ? "NTree": "None";
+    var rayDepth = $F('rayDepth');
+    var numLights = parseFloat($F('numLights'));
+
+    for(var i = 0;i < numLights; i++){
+        scene.lights.push(lights[i]);
+    }
+
+    var raytracer = new Flog.RayTracer.Engine(
+        {
+            canvasWidth: imageWidth,
+            canvasHeight: imageHeight,
+            pixelWidth: pixelSize[0],
+            pixelHeight: pixelSize[1],
+            "renderDiffuse": renderDiffuse,
+            "renderHighlights": renderHighlights,
+            "renderShadows": renderShadows,
+            "renderReflections": renderReflections,
+            "renderTransparency": renderTransparency,
+            "renderTree":renderTree,
+            "rayDepth": rayDepth
+        }
+    );
+    
+    //$("canvas").setAttribute("width", imageWidth);
+    //$("canvas").setAttribute("height", imageHeight);
+
+    var startTime = (new Date).getTime();
+    var stats = {totalRays:0, totalPixelsDone: 0, totalTime:0};
+    var is_canceled = {well_is_it:false};
+    var done_callback = (function(start, stats){
+        var canvasPixels =  imageWidth/pixelSize[0] * (imageHeight/pixelSize[1]);
+        return( function(rays, pixels){
+            stats.totalPixelsDone += pixels;
+            stats.totalRays += rays;
+            var renderTime = (new Date).getTime() - start;
+            $('percentDone').innerHTML = (stats.totalPixelsDone/canvasPixels*100).toFixed(2) + "% in " + (stats.totalTime/1000) + " seconds";
+            $('raysSecond').innerHTML =  stats.totalRays + " total rays rendered at " + Math.round(stats.totalRays/(stats.totalTime/1000)) + " rays/s";
+            $('btnRender').innerText = "Render";
+            Event.observe('btnRender', 'click', renderScene);
+        });
+    })(startTime, stats);
+
+    var update_callback = (function(stats){
+        var lastTime = (new Date).getTime();
+        var canvasPixels =  imageWidth/pixelSize[0] * (imageHeight/pixelSize[1]);
+        return( function(rays, pixels){
+            stats.totalPixelsDone += pixels;
+            stats.totalRays += rays;
+            var timeDiff = (new Date).getTime() - lastTime;
+            stats.totalTime += timeDiff;
+            $('percentDone').innerHTML = (stats.totalPixelsDone/canvasPixels*100).toFixed(2) + "% in " + (stats.totalTime/1000).toFixed(1) + " seconds";
+            $('raysSecond').innerHTML = Math.round(stats.totalRays/(stats.totalTime/1000)) + " rays/s";
+            lastTime = (new Date).getTime();
+        });
+    })(stats);
+
+    var cancel_render = (function(is_canceled){
+        return( function(){
+            Event.stopObserving('btnRender', 'click', cancel_render);
+            is_canceled.well_is_it = true;
+        });
+    })(is_canceled);
+
+    $('btnRender').innerText = "Cancel";
+    $('btnRender').disabled = false;
+    Event.observe('btnRender', 'click', cancel_render);
+    raytracer.renderScene(scene, $("canvas"), is_canceled, done_callback, update_callback);
+}
+
+function start(){
+    Event.observe('btnRender', 'click', renderScene);
+}
+
+window.addEventListener("load", start, false);
+
+</script>
+
+<style type="text/css">
+body {
+    background: #fff;
+    font: 12px/1.6em Tahoma, Verdana, Arial, sans-serif;
+}
+canvas {
+    border: 5px solid #000;
+    background: #000;
+    float: left;
+}
+fieldset#options {
+    width: 240px;
+    margin-left: 20px;
+    float: left;
+}
+#renderTimeDisplay {
+    clear:both;
+}
+</style>
+    
+</head><body>
+
+<h1>Flog.RayTracer.Happy</h1>
+<h2>293,231-triangle Happy Buddha Demo</h2>
+<p><b>Warning:</b> This is <b>very</b> CPU intensive. Your browser may appear to stop
+responding.</p>
+<div id="renderStats">
+    <label>Percent Done: <span id="percentDone"></span></label><br>
+    <label>Rays Per Second: <span id="raysSecond"></span></label>
+</div>
+<canvas id="canvas" width="800" height="800" style="border: 5px solid
+rgb(0, 0, 0);"></canvas>
+
+<fieldset id="options">
+    <legend>Rendering Options</legend>
+    <fieldset>
+        <legend>Output</legend>
+        <label for="imageWidth">Image Width: </label><br>
+        <input id="imageWidth" value="800" type="text">
+        <br>
+        <label for="imageHeight">Image Height: </label><br>
+        <input id="imageHeight" value="800" type="text">
+        <br>
+        <label for="pixelSize">Pixel size:</label><br>
+        <select id="pixelSize">
+            <option selected="selected" value="20,20">Quick &amp; nasty 
+(20x20)</option>
+            <option value="10,10">Faster (10x10)</option>
+            <option value="5,5">Fast (5x5)</option>
+            <option value="2,5">Ok quality (2x5)</option>
+            <option value="2,2">Good quality (2x2)</option>
+            <option value="1,1">Best quality (1x1)</option>
+        </select>
+</fieldset>
+    
+    <fieldset>
+        <legend>Render</legend>
+        <label><input id="renderDiffuse" checked="checked" type="checkbox"> Diffuse</label>
+        <br>
+        <label><input id="renderHighlights" checked="checked" type="checkbox"> Highlights</label>
+        <br>
+        <label><input id="renderShadows" checked="checked" type="checkbox"> Shadows</label>
+        <br>
+        <label for="numLights">Lights:</label><br>
+        <select id="numLights">
+            <option value="1">Quick View (1 light)</option>
+            <option selected="selected" value="2">Main &amp; Fill (2 lights)</option>
+            <option value="3">Professional (3 lights)</option>
+            <option value="4">Photo Studio (4 lights)</option>
+            <option value="5">Spielberg (5 lights)</option>
+        </select>
+        <br>
+        <label><input id="renderTransparency" checked="checked" type="checkbox"> Transparency</label>
+        <br>
+        <label><input id="renderReflections" checked="checked" type="checkbox"> Reflections</label>
+        <br>
+        <label for="rayDepth">Ray Depth:</label><br>
+        <select id="rayDepth">
+            <option value="1">Very Fast (1 bounce)</option>
+            <option selected="selected" value="2">Quite Nice (2 bounces)</option>
+            <option value="3">Pretty Slow (3 bounces)</option>
+            <option value="4">Just Awful (4 bounces)</option>
+        </select>
+        <br>
+        <label><input type="radio" id="NTree" name="renderTree" value="NTree" checked="checked"> Use N-Tree </label> <br>
+            <label><input type="radio" id="NoTree" name="renderTree" value="None"> None </label>
+    </fieldset>
+    
+    <button type="button" id="btnRender">Render</button>
+</fieldset>
+</body></html>
