@@ -6,12 +6,14 @@ Flog.RayTracer.Material.Solid = Class.create();
 
 Flog.RayTracer.Material.Solid.prototype = Object.extend(
     new Flog.RayTracer.Material.BaseMaterial(), {   
-        initialize : function(color, reflection, refraction, transparency, gloss) {
+        initialize : function(color, reflection, refraction, transparency, gloss, diffuse) {
             this.color = color;
             this.reflection = reflection;
+            this.refraction = refraction;
             this.transparency = transparency;
             this.gloss = gloss;
             this.hasTexture = false;
+            this.diffuse = diffuse;
         },
         
         getColor: function(u, v){
