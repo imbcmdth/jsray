@@ -31,34 +31,35 @@ var scene = new Flog.RayTracer.Scene();
 var lights = [];
 var new_points_array = [];
 
-function renderScene(){
-    Event.stopObserving('btnRender', 'click', renderScene);
-    $('btnRender').disabled = true;
-
-if(!done_initializing) {
-
-    scene.camera = new Flog.RayTracer.Camera(
-                        new Flog.RayTracer.Vector(0, 0, -1),
-                        new Flog.RayTracer.Vector(0, 0, 0.5),
-                        new Flog.RayTracer.Vector(0, 1, 0),
-                        true, 
-                        15
-                    );
-
-    scene.background = new Flog.RayTracer.Background(
-                                new Flog.RayTracer.Color(0.5, 0.5, 0.5),
-                                0.25
-                            );
-
-    // First take raw points and make point-lists
+function initIt(update_callback, finished_callback, start_at_points, start_at_polys) {
+    var startTime = (new Date()).getTime();
+    if(!start_at_points) start_at_points = 0;
+    if(!start_at_polys) start_at_polys = 0;
+    
+    // First take raw points and make rays! (point and averaged-normal)
     var raw_pts = Flog.RayTracer.Happy.RawPoints;
-    for(var k = 0; k < raw_pts.length; k++ ){
-    	new_point = new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(raw_pts[k][0], raw_pts[k][1]-0.125, raw_pts[k][2]*-1), new Flog.RayTracer.Vector(0, 0, 0)); // We move the bunny 0.1 units down on the y axis
+    for(var k = start_at_points; k < raw_pts.length; k++ ){
+    	new_point = new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(raw_pts[k][0], raw_pts[k][1]-0.125, raw_pts[k][2]*-1), new Flog.RayTracer.Vector(0, 0, 0)); // We move the buddha 0.125 units down on the y axis
     	new_points_array[k] = new_point;//,[]];
+
+      if( ((new Date()).getTime() - startTime) > 1000 ) {
+          update_callback(0, k-start_at_points);
+          start_at_points = k+1;
+          setTimeout(
+              (function(lupdate_callback, lfinished_callback, lstart_at_points ){
+                  return(function(){
+                      initIt(lupdate_callback, lfinished_callback, lstart_at_points, 0);
+                   });
+               })(update_callback, finished_callback, start_at_points),
+           1); // Might need more time for FF and some other agents.
+          return;
+      }		
 		}
+    update_callback(0, k-start_at_points);
+    
     // Add bunny
     var raw_plys = Flog.RayTracer.Happy.RawPolys;
-    for(k = 0; k < raw_plys.length; k++ ){
+    for(k = start_at_polys; k < raw_plys.length; k++ ){
     	// Fetch vertex indices
     	v1_idx = raw_plys[k][0];
     	v2_idx = raw_plys[k][2];
@@ -93,7 +94,34 @@ if(!done_initializing) {
       	new_points_array[v3_idx].direction = Flog.RayTracer.Vector.prototype.add(new_points_array[v3_idx].direction, new_triangle.n.normalize());
       }
       scene.addShape(new_triangle);
+
+      if( ((new Date()).getTime() - startTime) > 1000 ) {
+          update_callback(1, k-start_at_polys);
+          start_at_polys = k+1;
+          setTimeout(
+              (function(lupdate_callback, lfinished_callback, lstart_at_points, lstart_at_polys ){
+                  return(function(){
+                      initIt(lupdate_callback, lfinished_callback, lstart_at_points, lstart_at_polys);
+                   });
+               })(update_callback, finished_callback, raw_pts.length, start_at_polys),
+           1); // Might need more time for FF and some other agents.
+          return;
+      }		
     }
+    update_callback(1, k-start_at_polys);
+    
+    scene.camera = new Flog.RayTracer.Camera(
+                        new Flog.RayTracer.Vector(0, 0, -1),
+                        new Flog.RayTracer.Vector(0, 0, 0.5),
+                        new Flog.RayTracer.Vector(0, 1, 0),
+                        true, 
+                        15
+                    );
+
+    scene.background = new Flog.RayTracer.Background(
+                                new Flog.RayTracer.Color(0.5, 0.5, 0.5),
+                                0.25
+                            );
 
     var plane = new Flog.RayTracer.Shape.Plane(
                                 new Flog.RayTracer.Vector(0, 1, 0).normalize(),
@@ -140,9 +168,41 @@ if(!done_initializing) {
         new Flog.RayTracer.Color(0.7, 0.35, 0.35),
         70
     );
-
     done_initializing = true;
-}
+    
+	renderScene()
+};
+
+function renderScene(){
+    Event.stopObserving('btnRender', 'click', renderScene);
+    $('btnRender').disabled = true;
+			
+	    
+	  var load_update_callback = (function(){
+			var totalPoints = Flog.RayTracer.Happy.RawPoints.length;
+			var totalPolys = Flog.RayTracer.Happy.RawPolys.length;
+			var pointsDone = 0;
+			var polysDone = 0;
+			var timesCalled = 0;
+			var loadingTicker = ".";
+        return( function(stage, numitems){
+        	if(stage === 0) {
+            pointsDone += numitems;
+          } else {
+            polysDone += numitems;
+          }
+          $('percentDone').innerHTML = ((pointsDone+polysDone)/(totalPoints+totalPolys)*100).toFixed(2) + "% of the scene loaded";
+          $('raysSecond').innerHTML = "Loading" + loadingTicker;
+          loadingTicker = loadingTicker + ".";
+          timesCalled+=1;
+          if(timesCalled > 4) {
+          	loadingTicker = ".";
+          	timesCalled = 0;
+          }
+        });
+    })();
+    
+  var load_finished_callback = function(){
     scene.lights = [];
 
     /* Load rendering options */
@@ -222,7 +282,14 @@ if(!done_initializing) {
     $('btnRender').disabled = false;
     Event.observe('btnRender', 'click', cancel_render);
     raytracer.renderScene(scene, $("canvas"), is_canceled, done_callback, update_callback);
-}
+	};
+
+	if(!done_initializing) {
+		initIt(load_update_callback, load_finished_callback);
+	}else{
+		load_finished_callback();
+	}
+};
 
 function start(){
     Event.observe('btnRender', 'click', renderScene);
