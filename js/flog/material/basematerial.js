@@ -7,10 +7,11 @@ Flog.RayTracer.Material.BaseMaterial = Class.create();
 
 Flog.RayTracer.Material.BaseMaterial.prototype = {
 
+		diffuse: 1.0,
     gloss: 2.0,             // [0...infinity] 0 = matt
     transparency: 0.0,      // 0=opaque
     reflection: 0.0,        // [0...infinity] 0 = no reflection
-    refraction: 0.50,
+    refraction: 1.0,
     hasTexture: false,
 
     initialize : function() {
