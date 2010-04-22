@@ -16,6 +16,7 @@
 <script type="text/javascript" src="js/flog/shape/baseshape.js"></script>
 <script type="text/javascript" src="js/flog/shape/sphere.js"></script>
 <script type="text/javascript" src="js/flog/shape/plane.js"></script>
+<script type="text/javascript" src="js/flog/shape/triangle.js"></script>
 <script type="text/javascript" src="js/flog/intersectioninfo.js"></script>
 <script type="text/javascript" src="js/flog/camera.js"></script>
 <script type="text/javascript" src="js/flog/background.js"></script>
@@ -34,8 +35,10 @@ if(!done_initializing) {
 
     scene.camera = new Flog.RayTracer.Camera(
                         new Flog.RayTracer.Vector(0, 0, -15),
-                        new Flog.RayTracer.Vector(-0.2, 0, 5),
-                        new Flog.RayTracer.Vector(0, 1, 0)
+                        new Flog.RayTracer.Vector(0, 0, 5),
+                        new Flog.RayTracer.Vector(0, 1, 0),
+                        false, // Cast rays from "film plane"
+                        1
                     );
     
     scene.background = new Flog.RayTracer.Background(
@@ -51,7 +54,8 @@ if(!done_initializing) {
             0.3,
             0.0,
             0.0,
-            2.0
+            2.0,
+            1.0
         )
     );
     
@@ -61,9 +65,10 @@ if(!done_initializing) {
         new Flog.RayTracer.Material.Solid(
             new Flog.RayTracer.Color(0.0,0.0,0.7),
             0.1,
-            0.9,
-            0.4,
-            1.5
+            1.02,
+            0.0,
+            1.5,
+            1.0
         )
     );
     
@@ -75,14 +80,116 @@ if(!done_initializing) {
                                     new Flog.RayTracer.Color(0,0,0),
                                     0.2,
                                     0.0,
-                                    1.0,
-                                    0.7
+                                    0.0,
+                                    0.7,
+                                    1.0
                                 )
                             );
-    
+	/*
+    var box_material = new Flog.RayTracer.Material.Solid(
+          new Flog.RayTracer.Color(0.9,0.0,0.0),
+          0.0,
+          1.2,
+          0.5,
+          1.5,
+          0.5
+      );
+
+    // Front Face
+    var tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1, 1, 1), new Flog.RayTracer.Vector(0, 0, 1)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1, 1, 1), new Flog.RayTracer.Vector(0, 0, 1)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1,-1, 1), new Flog.RayTracer.Vector(0, 0, 1))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1,-1, 1), new Flog.RayTracer.Vector(0, 0, 1)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1,-1, 1), new Flog.RayTracer.Vector(0, 0, 1)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1, 1, 1), new Flog.RayTracer.Vector(0, 0, 1))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    // Back Face
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1, 1, -1), new Flog.RayTracer.Vector(0, 0, -1)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1, 1, -1), new Flog.RayTracer.Vector(0, 0, -1)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1,-1, -1), new Flog.RayTracer.Vector(0, 0, -1))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1,-1, -1), new Flog.RayTracer.Vector(0, 0, -1)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1,-1, -1), new Flog.RayTracer.Vector(0, 0, -1)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1, 1, -1), new Flog.RayTracer.Vector(0, 0, -1))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    // Top Face
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1, 1, 1), new Flog.RayTracer.Vector(0, 1, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1, 1,-1), new Flog.RayTracer.Vector(0, 1, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1, 1,-1), new Flog.RayTracer.Vector(0, 1, 0))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1, 1,-1), new Flog.RayTracer.Vector(0, 1, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1, 1, 1), new Flog.RayTracer.Vector(0, 1, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1, 1, 1), new Flog.RayTracer.Vector(0, 1, 0))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    // Bottom Face
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1,-1, 1), new Flog.RayTracer.Vector(0, -1, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1,-1, 1), new Flog.RayTracer.Vector(0, -1, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1,-1,-1), new Flog.RayTracer.Vector(0, -1, 0))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1,-1,-1), new Flog.RayTracer.Vector(0, -1, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1,-1,-1), new Flog.RayTracer.Vector(0, -1, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1,-1, 1), new Flog.RayTracer.Vector(0, -1, 0))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    // Right Face
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1, 1, 1), new Flog.RayTracer.Vector(1, 0, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1, 1,-1), new Flog.RayTracer.Vector(1, 0, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1,-1,-1), new Flog.RayTracer.Vector(1, 0, 0))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1,-1,-1), new Flog.RayTracer.Vector(1, 0, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1,-1, 1), new Flog.RayTracer.Vector(1, 0, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector( 1, 1, 1), new Flog.RayTracer.Vector(1, 0, 0))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    // Left Face
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1, 1, 1), new Flog.RayTracer.Vector(-1, 0, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1,-1, 1), new Flog.RayTracer.Vector(-1, 0, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1,-1,-1), new Flog.RayTracer.Vector(-1, 0, 0))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    tri = new Flog.RayTracer.Shape.Triangle([
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1,-1,-1), new Flog.RayTracer.Vector(-1, 0, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1, 1,-1), new Flog.RayTracer.Vector(-1, 0, 0)),
+                                new Flog.RayTracer.Ray(new Flog.RayTracer.Vector(-1, 1, 1), new Flog.RayTracer.Vector(-1, 0, 0))],
+                                box_material
+                            );
+    scene.addShape(tri);
+    */
+
     scene.addPlane(plane);
-    scene.addSphere(sphere);
-    scene.addSphere(sphere1);
+    scene.addShape(sphere);
+    scene.addShape(sphere1);
 
     var light = new Flog.RayTracer.Light(
         new Flog.RayTracer.Vector(5, 10, -1),

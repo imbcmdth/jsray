@@ -7436,10 +7436,11 @@ if(!done_initializing) {
                 massive_sphere_array[k][3],
                 new Flog.RayTracer.Material.Solid(
                     new Flog.RayTracer.Color(1-(massive_sphere_array[k][3]*1.5),1-(massive_sphere_array[k][3]*1.75),1-(massive_sphere_array[k][3]*1.75)),
-                    0.0,
-                    1.5,
+                    0.25,
+                    1.1,
                     0.5,
-                    2.0
+                    2.0,
+                    0.25
                 )
             );
         } else {
@@ -7448,14 +7449,15 @@ if(!done_initializing) {
                 massive_sphere_array[k][3],
                 new Flog.RayTracer.Material.Solid(
                     new Flog.RayTracer.Color(1-(massive_sphere_array[k][3]*1.5),1-(massive_sphere_array[k][3]*1.75),1-(massive_sphere_array[k][3]*1.75)),
-                    0.3,
+                    0.4,
                     0.0,
                     0.0,
-                    2.0
+                    2.0,
+                    0.6
                 )
             );
         }
-        scene.addSphere(sphere);
+        scene.addShape(sphere);
     }
 
     var plane = new Flog.RayTracer.Shape.Plane(
@@ -7466,8 +7468,9 @@ if(!done_initializing) {
                                     new Flog.RayTracer.Color(0.5,0,0),
                                     0.25,
                                     0.0,
-                                    1.0,
-                                    2
+                                    0.0,
+                                    2,
+                                    0.75
                                 )
                             );
     scene.addPlane(plane);

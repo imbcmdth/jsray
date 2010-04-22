@@ -66480,19 +66480,34 @@ if(!done_initializing) {
 
     // Add "sphereflake"
     for(var k = 0; k < massive_sphere_array.length; k++ ){
-        sphere = new Flog.RayTracer.Shape.Sphere(
-            new Flog.RayTracer.Vector(massive_sphere_array[k][0], massive_sphere_array[k][1], massive_sphere_array[k][2]),
-            massive_sphere_array[k][3],
-            new Flog.RayTracer.Material.Solid(
-                new Flog.RayTracer.Color(1-(massive_sphere_array[k][3]*1.5),1-(massive_sphere_array[k][3]*1.75),1-(massive_sphere_array[k][3]*1.75)),
-                0.3,
-                0.0,
-                0.0,
-                2.0
-            )
-        );
-
-    scene.addSphere(sphere);
+        if(massive_sphere_array[k][3] > 0.05) {
+            sphere = new Flog.RayTracer.Shape.Sphere(
+                new Flog.RayTracer.Vector(massive_sphere_array[k][0], massive_sphere_array[k][1], massive_sphere_array[k][2]),
+                massive_sphere_array[k][3],
+                new Flog.RayTracer.Material.Solid(
+                    new Flog.RayTracer.Color(1-(massive_sphere_array[k][3]*1.5),1-(massive_sphere_array[k][3]*1.75),1-(massive_sphere_array[k][3]*1.75)),
+                    0.25,
+                    1.5,
+                    0.25,
+                    2.0,
+                    0.5
+                )
+            );
+        } else {
+            sphere = new Flog.RayTracer.Shape.Sphere(
+                new Flog.RayTracer.Vector(massive_sphere_array[k][0], massive_sphere_array[k][1], massive_sphere_array[k][2]),
+                massive_sphere_array[k][3],
+                new Flog.RayTracer.Material.Solid(
+                    new Flog.RayTracer.Color(1-(massive_sphere_array[k][3]*1.5),1-(massive_sphere_array[k][3]*1.75),1-(massive_sphere_array[k][3]*1.75)),
+                    0.4,
+                    0.0,
+                    0.0,
+                    2.0,
+                    0.6
+                )
+            );
+        }
+    scene.addShape(sphere);
 }
 
     var plane = new Flog.RayTracer.Shape.Plane(
@@ -66504,7 +66519,8 @@ if(!done_initializing) {
                                     0.25,
                                     0.0,
                                     1.0,
-                                    2
+                                    2,
+                                    0.75
                                 )
                             );
     scene.addPlane(plane);
