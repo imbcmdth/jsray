@@ -11,13 +11,13 @@ Flog.RayTracer.Scene.prototype = {
     lights : [], 
     background : null,
     ntree : null,  
-    addSphere : function(sphere) {
-        this.shapes.push(sphere);
-        var aabb = sphere.bb();
-        this.ntree.insert({intervals:aabb, object:sphere});
-    },
     addPlane : function(plane) {
         this.planes.push(plane);
+    },
+    addShape : function(shape) {
+        this.shapes.push(shape);
+        var aabb = shape.bb();
+        this.ntree.insert({intervals:aabb, object:shape});
     },
     addCube : function(cube) { // TODO
 //        this.shapes.push(plane);
