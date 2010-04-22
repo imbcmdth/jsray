@@ -12,7 +12,7 @@ Flog.RayTracer.IntersectionInfo.prototype = {
     normal: null,
     color: null,
     distance: null,
-    
+    ior: 1,
     initialize : function() {
         this.color = new Flog.RayTracer.Color(0,0,0);
     },
