@@ -248,13 +248,15 @@ Flog.RayTracer.Engine.prototype = {
 
             if(this.options.renderDiffuse && !shadowInfo.isHit){
 				          	L *= info.shape.material.diffuse;
-                    diffcolor = Flog.RayTracer.Color.prototype.multiply(
+                    diffcolor = Flog.RayTracer.Color.prototype.add(diffcolor, 
+                    								Flog.RayTracer.Color.prototype.multiply(
                                             info.color,
                                             Flog.RayTracer.Color.prototype.multiplyScalar(
                                                 light.color,
                                                 L
-                                            )
-                                        );
+                                 	         )
+                                     )
+                                 );
             }
 
           // Phong specular highlights
@@ -275,7 +277,7 @@ Flog.RayTracer.Engine.prototype = {
                             ).normalize();
 
             var glossWeight = Math.pow(Math.max(info.normal.dot(H), 0), shininess);
-            speccolor = Flog.RayTracer.Color.prototype.multiplyScalar(light.color, glossWeight);
+            speccolor = Flog.RayTracer.Color.prototype.add(speccolor, Flog.RayTracer.Color.prototype.multiplyScalar(light.color, glossWeight));
           }
         }
         }
